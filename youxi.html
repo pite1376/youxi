@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>午夜图书馆谜案 - 在线互动剧本杀</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6a1b9a;
+            --secondary: #9c27b0;
+            --accent: #e91e63;
+            --dark: #121212;
+            --light: #f5f5f5;
+            --text: #333;
+            --bg: #f8f9fa;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 游戏容器 */
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* 游戏标题 */
+        .game-header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease;
+        }
+
+        .game-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .game-subtitle {
+            font-size: 1.2rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* 游戏主区域 */
+        .game-main {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* 场景展示区 */
+        .scene-container {
+            flex: 2;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            min-height: 500px;
+        }
+
+        .scene-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+
+        .scene-content {
+            padding: 25px;
+        }
+
+        .scene-text {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            animation: fadeIn 0.8s ease;
+        }
+
+        /* 角色对话 */
+        .dialogue {
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+
+        .dialogue-speaker {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .dialogue-speaker i {
+            margin-right: 10px;
+            color: var(--accent);
+        }
+
+        .dialogue-text {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* 选项按钮 */
+        .options-container {
+            margin-top: 30px;
+            animation: fadeInUp 1s ease;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.3);
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* 角色面板 */
+        .characters-panel {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .panel-title i {
+            margin-right: 10px;
+        }
+
+        .character-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .character-card {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .character-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid var(--primary);
+        }
+
+        .character-name {
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .character-role {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* 线索面板 */
+        .clues-panel {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .clue-item {
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .clue-item:hover {
+            background-color: #e1bee7;
+        }
+
+        .clue-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .clue-source {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .clue-content {
+            font-size: 0.9rem;
+        }
+
+        /* 游戏进度 */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* 游戏结束弹窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            animation: zoomIn 0.5s ease;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .modal-text {
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .modal-btn {
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(106, 27, 154, 0.3);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(106, 27, 154, 0.4);
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from { 
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes zoomIn {
+            from { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            to { 
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .game-main {
+                flex-direction: column;
+            }
+
+            .game-title {
+                font-size: 2rem;
+            }
+
+            .character-list {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .character-list {
+                grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .character-card {
+            padding: 10px;
+        }
+
+        .character-avatar {
+            width: 50px;
+            height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 游戏进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- 游戏标题 -->
+        <header class="game-header">
+            <h1 class="game-title">午夜图书馆谜案</h1>
+            <p class="game-subtitle">一场发生在深夜图书馆的离奇命案，你能在闭馆前找出真凶吗？</p>
+        </header>
+
+        <!-- 游戏主区域 -->
+        <main class="game-main">
+            <!-- 场景展示区 -->
+            <div class="scene-container">
+                <img src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80" alt="图书馆场景" class="scene-image" id="sceneImage">
+                <div class="scene-content">
+                    <div class="scene-text" id="sceneText">
+                        <p>深夜11点，大学图书馆即将闭馆。你作为学生侦探被紧急叫到现场——文学区发现了一具尸体！死者是著名教授张明远，胸口插着一把古董拆信刀。闭馆前只有20分钟，你必须在这段时间内找出真凶...</p>
+                    </div>
+
+                    <!-- 对话和选项将通过JavaScript动态生成 -->
+                    <div id="dialogueContainer"></div>
+                    <div class="options-container" id="optionsContainer"></div>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 角色面板 -->
+                <div class="characters-panel">
+                    <h3 class="panel-title"><i class="fas fa-users"></i>涉案人员</h3>
+                    <div class="character-list">
+                        <!-- 角色卡片将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 线索面板 -->
+                <div class="clues-panel">
+                    <h3 class="panel-title"><i class="fas fa-search"></i>收集的线索</h3>
+                    <div id="cluesContainer">
+                        <div class="clue-item">
+                            <div class="clue-title">初始线索 <span class="clue-source">来自: 现场</span></div>
+                            <div class="clue-content">死者张明远教授，胸口插着一把古董拆信刀，死亡时间约在30分钟前。</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 游戏结束弹窗 -->
+    <div class="modal" id="endModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modalTitle">游戏结束</h2>
+            <p class="modal-text" id="modalText"></p>
+            <button class="modal-btn" id="restartBtn">再来一局</button>
+        </div>
+    </div>
+
+    <script>
+        // 游戏数据
+        const gameData = {
+            title: "午夜图书馆谜案",
+            characters: [
+                { id: 1, name: "张明远", role: "死者", desc: "文学系教授，专攻古典文学", avatar: "https://randomuser.me/api/portraits/men/60.jpg", suspicious: "" },
+                { id: 2, name: "李雨晴", role: "图书管理员", desc: "工作5年的资深管理员", avatar: "https://randomuser.me/api/portraits/women/45.jpg", suspicious: "与死者有学术纠纷" },
+                { id: 3, name: "王建国", role: "保安", desc: "图书馆夜班保安", avatar: "https://randomuser.me/api/portraits/men/30.jpg", suspicious: "曾因纪律问题被死者举报" },
+                { id: 4, name: "赵小曼", role: "研究生", desc: "死者的研究生", avatar: "https://randomuser.me/api/portraits/women/25.jpg", suspicious: "论文被死者否决，无法毕业" },
+                { id: 5, name: "陈志强", role: "清洁工", desc: "图书馆清洁人员", avatar: "https://randomuser.me/api/portraits/men/50.jpg", suspicious: "儿子因死者挂科而退学" },
+                { id: 6, name: "刘芳", role: "实习生", desc: "新来的实习管理员", avatar: "https://randomuser.me/api/portraits/women/30.jpg", suspicious: "目击者称案发时她行为异常" }
+            ],
+            scenes: [
+                {
+                    id: 1,
+                    image: "https://images.unsplash.com/photo-1507842217343-583bb7270b66?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "你站在图书馆大厅，闭馆铃声已经响起。馆长告诉你，20分钟后保安会锁门，你必须在这之前破案。从哪里开始调查？",
+                    dialogues: [],
+                    options: [
+                        { text: "检查尸体和凶器", nextScene: 2, clue: "凶器是死者收藏的古董拆信刀，刀柄上有模糊指纹" },
+                        { text: "询问图书管理员李雨晴", nextScene: 3, clue: "李雨晴声称案发时在整理书架，但有学生看到她与死者争吵" },
+                        { text: "查看监控录像", nextScene: 4, clue: "监控显示案发时段有5人进出文学区，但关键位置摄像头被遮挡" }
+                    ]
+                },
+                {
+                    id: 2,
+                    image: "https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "尸体旁散落着几本古籍，死者手中紧握着一张纸条。法医初步判断死亡时间是晚上10:30左右。",
+                    dialogues: [],
+                    options: [
+                        { text: "检查死者手中的纸条", nextScene: 5, clue: "纸条上写着'你的秘密我会公之于众'，字迹潦草" },
+                        { text: "询问保安王建国", nextScene: 6, clue: "保安承认10:20左右离开岗位去抽烟，但坚称没看到可疑人物" },
+                        { text: "调查古籍的来源", nextScene: 7, clue: "这些古籍是珍贵孤本，只有高级教职员工可以借阅" }
+                    ]
+                },
+                {
+                    id: 5,
+                    image: "https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "纸条上的字迹与你之前看到的借书卡上的字迹相似。死者口袋里有张借书卡，上面有李雨晴的签名。",
+                    dialogues: [
+                        { speaker: "李雨晴", text: "那张纸条？我...我不知道，可能是有人模仿我的笔迹！" },
+                        { speaker: "你", text: "但借书卡上的签名确实是你的，而且时间就在案发前半小时。" }
+                    ],
+                    options: [
+                        { text: "追问李雨晴与死者的关系", nextScene: 8, clue: "李雨晴承认死者威胁要举报她私自外借珍贵古籍" },
+                        { text: "检查图书馆借阅记录", nextScene: 9, clue: "记录显示死者最近借阅了一本关于学术丑闻的书" },
+                        { text: "询问清洁工陈志强", nextScene: 10, clue: "清洁工声称看到李雨晴案发时在文学区附近" }
+                    ]
+                },
+                {
+                    id: 8,
+                    image: "https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "李雨晴情绪激动，承认与死者有过争执，但坚称自己没有杀人。这时，你注意到她的右手有轻微抓痕。",
+                    dialogues: [
+                        { speaker: "李雨晴", text: "这些抓痕是...是我家猫抓的！和这件事没关系！" },
+                        { speaker: "你", text: "法医说死者指甲里有皮肤组织，很可能是反抗时抓伤了凶手。" }
+                    ],
+                    options: [
+                        { text: "对比DNA证据", nextScene: 11, clue: "初步比对显示抓痕DNA与死者指甲中的不匹配" },
+                        { text: "调查李雨晴的不在场证明", nextScene: 12, clue: "实习生刘芳证实李雨晴案发时确实在整理书架" },
+                        { text: "重新审视其他嫌疑人", nextScene: 13, clue: "保安王建国的制服上发现了血迹" }
+                    ]
+                },
+                {
+                    id: 13,
+                    image: "https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "你发现王建国的制服袖口有血迹，他解释说是不小心割伤了自己。但伤口形状与拆信刀不符。",
+                    dialogues: [
+                        { speaker: "王建国", text: "我...我确实恨张教授，他害我差点丢了工作，但我没杀人！" },
+                        { speaker: "你", text: "那为什么你的值班记录显示10:25你在文学区，但你说自己去抽烟了？" }
+                    ],
+                    options: [
+                        { text: "检查保安室的监控记录", nextScene: 14, clue: "监控显示王建国10:20离开，10:28返回，期间文学区有人进出" },
+                        { text: "询问研究生赵小曼", nextScene: 15, clue: "赵小曼承认案发时见过王建国，但说法与监控矛盾" },
+                        { text: "指认凶手", nextScene: 16 }
+                    ]
+                },
+                {
+                    id: 16,
+                    image: "https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "经过缜密推理，你决定指认凶手。所有证据都指向一个人...",
+                    dialogues: [],
+                    options: [
+                        { text: "指认图书管理员李雨晴", nextScene: 17 },
+                        { text: "指认保安王建国", nextScene: 18 },
+                        { text: "指认研究生赵小曼", nextScene: 19 },
+                        { text: "指认清洁工陈志强", nextScene: 20 },
+                        { text: "指认实习生刘芳", nextScene: 21 }
+                    ]
+                },
+                // 结局场景
+                {
+                    id: 17,
+                    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "你指认李雨晴为凶手，但她提供了不在场证明。真凶趁机逃走了...",
+                    dialogues: [],
+                    options: [
+                        { text: "游戏结束", nextScene: -1, isEnd: true, ending: "失败结局：真凶逃脱了，你的侦探声誉受损。" }
+                    ]
+                },
+                {
+                    id: 18,
+                    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "王建国在证据面前崩溃认罪。原来死者发现他偷卖图书馆珍贵古籍，威胁要举报他。",
+                    dialogues: [
+                        { speaker: "王建国", text: "都是他逼我的！那些书能卖好多钱，我女儿需要手术费..." }
+                    ],
+                    options: [
+                        { text: "游戏结束", nextScene: -1, isEnd: true, ending: "成功结局：你成功指认真凶，案件告破！" }
+                    ]
+                },
+                {
+                    id: 19,
+                    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "赵小曼虽然动机充分，但没有直接证据。真凶其实是...",
+                    dialogues: [],
+                    options: [
+                        { text: "游戏结束", nextScene: -1, isEnd: true, ending: "失败结局：你指控了错误的人，真凶依然逍遥法外。" }
+                    ]
+                },
+                {
+                    id: 20,
+                    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "陈志强有不在场证明。闭馆时间到，你没能找出真凶...",
+                    dialogues: [],
+                    options: [
+                        { text: "游戏结束", nextScene: -1, isEnd: true, ending: "失败结局：时间到，案件成为悬案。" }
+                    ]
+                },
+                {
+                    id: 21,
+                    image: "https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80",
+                    text: "刘芳只是目击者，没有作案动机。你的错误指控让她失去了实习机会...",
+                    dialogues: [],
+                    options: [
+                        { text: "游戏结束", nextScene: -1, isEnd: true, ending: "失败结局：你冤枉了无辜的人。" }
+                    ]
+                }
+            ],
+            currentScene: 1,
+            collectedClues: [
+                { title: "初始线索", source: "现场", content: "死者张明远教授，胸口插着一把古董拆信刀，死亡时间约在30分钟前。" }
+            ],
+            progress: 0
+        };
+
+        // DOM元素
+        const sceneImage = document.getElementById('sceneImage');
+        const sceneText = document.getElementById('sceneText');
+        const dialogueContainer = document.getElementById('dialogueContainer');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const characterList = document.querySelector('.character-list');
+        const cluesContainer = document.getElementById('cluesContainer');
+        const progressBar = document.getElementById('progressBar');
+        const endModal = document.getElementById('endModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const restartBtn = document.getElementById('restartBtn');
+
+        // 初始化游戏
+        function initGame() {
+            // 渲染角色列表
+            renderCharacters();
+            
+            // 加载初始场景
+            loadScene(gameData.currentScene);
+            
+            // 更新进度条
+            updateProgress();
+        }
+
+        // 渲染角色列表
+        function renderCharacters() {
+            characterList.innerHTML = '';
+            gameData.characters.forEach(character => {
+                const characterCard = document.createElement('div');
+                characterCard.className = 'character-card';
+                characterCard.innerHTML = `
+                    <img src="${character.avatar}" alt="${character.name}" class="character-avatar">
+                    <div class="character-name">${character.name}</div>
+                    <div class="character-role">${character.role}</div>
+                `;
+                characterCard.addEventListener('click', () => showCharacterInfo(character));
+                characterList.appendChild(characterCard);
+            });
+        }
+
+        // 显示角色信息
+        function showCharacterInfo(character) {
+            const infoText = `<strong>${character.name}</strong> - ${character.role}<br>${character.desc}`;
+            if (character.suspicious) {
+                infoText += `<br><br><strong>可疑点:</strong> ${character.suspicious}`;
+            }
+            
+            // 创建自定义弹窗或使用alert
+            alert(infoText);
+        }
+
+        // 加载场景
+        function loadScene(sceneId) {
+            const scene = gameData.scenes.find(s => s.id === sceneId);
+            if (!scene) return;
+            
+            gameData.currentScene = sceneId;
+            
+            // 更新场景图像
+            sceneImage.src = scene.image;
+            sceneImage.alt = `场景${sceneId}`;
+            
+            // 更新场景文本
+            sceneText.innerHTML = `<p>${scene.text}</p>`;
+            
+            // 清空对话和选项
+            dialogueContainer.innerHTML = '';
+            optionsContainer.innerHTML = '';
+            
+            // 添加对话
+            if (scene.dialogues && scene.dialogues.length > 0) {
+                scene.dialogues.forEach(dialogue => {
+                    const dialogueElement = document.createElement('div');
+                    dialogueElement.className = 'dialogue';
+                    dialogueElement.innerHTML = `
+                        <div class="dialogue-speaker">
+                            <i class="fas fa-user"></i>${dialogue.speaker}
+                        </div>
+                        <div class="dialogue-text">${dialogue.text}</div>
+                    `;
+                    dialogueContainer.appendChild(dialogueElement);
+                });
+            }
+            
+            // 添加选项
+            if (scene.options && scene.options.length > 0) {
+                scene.options.forEach((option, index) => {
+                    const optionBtn = document.createElement('button');
+                    optionBtn.className = 'option-btn';
+                    optionBtn.textContent = `${index + 1}. ${option.text}`;
+                    optionBtn.addEventListener('click', () => selectOption(option));
+                    optionsContainer.appendChild(optionBtn);
+                });
+            }
+            
+            // 更新进度
+            updateProgress();
+        }
+
+        // 选择选项
+        function selectOption(option) {
+            // 如果是结局场景，显示结束弹窗
+            if (option.isEnd) {
+                showEnding(option.ending);
+                return;
+            }
+            
+            // 如果选项有关联线索，添加到收集的线索中
+            if (option.clue) {
+                addClue(option.text, option.clue);
+            }
+            
+            // 加载下一个场景
+            loadScene(option.nextScene);
+        }
+
+        // 添加线索
+        function addClue(title, content) {
+            // 检查是否已经收集过该线索
+            const existingClue = gameData.collectedClues.find(c => c.content === content);
+            if (existingClue) return;
+            
+            // 添加新线索
+            gameData.collectedClues.push({
+                title: title,
+                source: "调查获得",
+                content: content
+            });
+            
+            // 更新线索显示
+            renderClues();
+        }
+
+        // 渲染线索
+        function renderClues() {
+            cluesContainer.innerHTML = '';
+            gameData.collectedClues.forEach(clue => {
+                const clueItem = document.createElement('div');
+                clueItem.className = 'clue-item';
+                clueItem.innerHTML = `
+                    <div class="clue-title">${clue.title} <span class="clue-source">来自: ${clue.source}</span></div>
+                    <div class="clue-content">${clue.content}</div>
+                `;
+                cluesContainer.appendChild(clueItem);
+            });
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const totalScenes = gameData.scenes.length;
+            const currentIndex = gameData.scenes.findIndex(s => s.id === gameData.currentScene);
+            const progress = (currentIndex / (totalScenes - 1)) * 100;
+            
+            gameData.progress = progress;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // 显示结局
+        function showEnding(endingText) {
+            modalTitle.textContent = "游戏结束";
+            modalText.innerHTML = endingText;
+            endModal.style.display = "flex";
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            // 重置游戏数据
+            gameData.currentScene = 1;
+            gameData.collectedClues = [
+                { title: "初始线索", source: "现场", content: "死者张明远教授，胸口插着一把古董拆信刀，死亡时间约在30分钟前。" }
+            ];
+            gameData.progress = 0;
+            
+            // 隐藏结束弹窗
+            endModal.style.display = "none";
+            
+            // 重新初始化游戏
+            initGame();
+        }
+
+        // 事件监听
+        restartBtn.addEventListener('click', restartGame);
+
+        // 初始化游戏
+        initGame();
+    </script>
+</body>
+</html>
